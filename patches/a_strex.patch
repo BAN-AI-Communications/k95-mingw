@@ -1,0 +1,11 @@
+--- a_strex.c.orig	2002-11-12 08:21:22.000000000 -0500
++++ a_strex.c	2013-11-19 20:06:11.601889300 -0500
+@@ -378,7 +378,7 @@
+ 
+ #define FN_WIDTH_LN	25
+ #define FN_WIDTH_SN	10
+-
++#undef X509_NAME
+ static int do_name_ex(char_io *io_ch, void *arg, X509_NAME *n,
+ 				int indent, unsigned long flags)
+ {

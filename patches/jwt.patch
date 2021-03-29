@@ -1,0 +1,605 @@
+diff -Nruw src.farproc/ckcdeb.h src/ckcdeb.h
+--- src.farproc/ckcdeb.h	2005-12-30 00:29:05.000000000 -0500
++++ src/ckcdeb.h	2013-11-19 21:36:34.132041828 -0500
+@@ -5228,7 +5228,7 @@
+ _PROTOTYP( int zclosf, (int) );
+ #endif /* MAC */
+ #ifdef NZXPAND
+-_PROTOTYP( int nzxpand, (char *, int) );
++_PROTOTYP( int nzxpand, (CHAR *, int) );
+ #else /* NZXPAND */
+ _PROTOTYP( int zxpand, (char *) );
+ #endif /* NZXPAND */
+@@ -5302,7 +5302,7 @@
+ _PROTOTYP( int ttgwsiz, (void) );
+ _PROTOTYP( int ttchk, (void) );
+ _PROTOTYP( int ttxin, (int, CHAR *) );
+-_PROTOTYP( int ttxout, (CHAR *, int) );
++_PROTOTYP( int ttxout, (char *, int) );
+ _PROTOTYP( int ttol, (CHAR *, int) );
+ _PROTOTYP( int ttoc, (char) );
+ _PROTOTYP( int ttinc, (int) );
+@@ -6377,9 +6377,9 @@
+ _PROTOTYP( VOID le_init, (void) );
+ _PROTOTYP( VOID le_clean, (void));
+ _PROTOTYP( int le_inbuf, (void));
+-_PROTOTYP( int le_putstr, (CHAR *));
++_PROTOTYP( int le_putstr, (char *));
+ _PROTOTYP( int le_puts, (CHAR *, int));
+-_PROTOTYP( int le_putchar, (CHAR));
++_PROTOTYP( int le_putchar, (char));
+ _PROTOTYP( int le_getchar, (CHAR *));
+ 
+ /* #ifndef NOHTTP */
+diff -Nruw src.farproc/ckcker.h src/ckcker.h
+--- src.farproc/ckcker.h	2005-12-22 17:54:27.000000000 -0500
++++ src/ckcker.h	2013-11-19 21:37:44.035043794 -0500
+@@ -1308,7 +1308,7 @@
+ #else /* OS2 */
+ _PROTOTYP( int conect, (void) );
+ #endif /* OS2 */
+-_PROTOTYP( int ckcgetc, (int) );
++_PROTOTYP( static int ckcgetc, (int) );
+ _PROTOTYP( int ckcputc, (int) );
+ _PROTOTYP (int mdmhup, (void) );
+ _PROTOTYP( VOID herald, (void) );
+diff -Nruw src.farproc/ckcmai.c src/ckcmai.c
+--- src.farproc/ckcmai.c	2013-11-19 22:27:43.013128151 -0500
++++ src/ckcmai.c	2013-11-19 21:29:41.568030223 -0500
+@@ -187,7 +187,7 @@
+ #endif /* CK_AUTHENTICATION */
+ ""};
+ 
+-char * wiksdcpr = copyright;
++char * wiksdcpr = (char *) copyright; /* (jwt) wrong */
+ 
+ /*
+ DOCUMENTATION:
+diff -Nruw src.farproc/ck_crp.c src/ck_crp.c
+--- src.farproc/ck_crp.c	2013-11-19 22:27:43.057128152 -0500
++++ src/ck_crp.c	2013-11-19 22:10:29.720099086 -0500
+@@ -147,7 +147,7 @@
+ }
+ 
+ int
+-ttol(char * s, int n)
++ttol(CHAR * s, int n)
+ {
+     if ( p_ttol )
+         return(p_ttol(s,n));
+@@ -165,7 +165,7 @@
+ }
+ 
+ int
+-dohexdump( char * s1, char * s2, int n )
++dohexdump( CHAR * s1, CHAR * s2, int n )
+ {
+     if ( p_dohexdump )
+         p_dohexdump(s1,s2,n);
+@@ -295,7 +295,6 @@
+ #define des_new_random_key            des_random_key
+ #define des_set_random_generator_seed des_random_seed
+ #endif /* UNIX */
+-#define des_fixup_key_parity          des_set_odd_parity
+ #ifdef OPENSSL_097
+ #define OPENSSL_ENABLE_OLD_DES_SUPPORT
+ #include <openssl/des.h>
+@@ -5465,7 +5464,7 @@
+ #ifdef LIBDES
+     extern int des_check_key;
+     extern void libdes_dll_init(struct _crypt_dll_init *);
+-    des_check_key = 1;
++    /* des_check_key = 1; */ /* (jwt) This crashes K-95. */
+ #endif /* LIBDES */
+ 
+     if ( init->version >= 1 ) {
+@@ -5535,7 +5534,7 @@
+ #undef strdup
+ 
+ static void
+-fatal(char *msg) {
++Xfatal(char *msg) { /* (jwt) avoid conflict with fatal in ckcdeb.h */
+     if (!msg) msg = "";
+ 
+     printf(msg);
+@@ -5548,11 +5547,11 @@
+     void *ptr;
+ 
+     if (size == 0) {
+-        fatal("kmalloc: zero size");
++        Xfatal("kmalloc: zero size");
+     }
+     ptr = malloc(size);
+     if (ptr == NULL) {
+-        fatal("kmalloc: out of memory");
++        Xfatal("kmalloc: out of memory");
+     }
+     return ptr;
+ }
+@@ -5563,14 +5562,14 @@
+     void *new_ptr;
+ 
+     if (new_size == 0) {
+-        fatal("krealloc: zero size");
++        Xfatal("krealloc: zero size");
+     }
+     if (ptr == NULL)
+         new_ptr = malloc(new_size);
+     else
+         new_ptr = realloc(ptr, new_size);
+     if (new_ptr == NULL) {
+-        fatal("krealloc: out of memory");
++        Xfatal("krealloc: out of memory");
+     }
+     return new_ptr;
+ }
+@@ -5592,7 +5591,7 @@
+     char *cp;
+ 
+     if (str == NULL) {
+-        fatal("kstrdup: NULL pointer given as argument");
++        Xfatal("kstrdup: NULL pointer given as argument");
+     }
+     len = strlen(str) + 1;
+     cp = kmalloc(len);
+diff -Nruw src.farproc/ckcsig.h src/ckcsig.h
+--- src.farproc/ckcsig.h	2004-03-14 13:08:54.000000000 -0500
++++ src/ckcsig.h	2013-11-19 21:44:16.431054831 -0500
+@@ -90,7 +90,7 @@
+ #define cklongjmp(x,y) siglongjmp(x,y)
+ #else
+ #ifdef NT
+-__inline int
++static __inline int
+ ck_ih(void) {
+     extern int TlsIndex;
+ #ifdef NTSIG
+diff -Nruw src.farproc/ckcuni.h src/ckcuni.h
+--- src.farproc/ckcuni.h	2004-03-14 13:07:24.000000000 -0500
++++ src/ckcuni.h	2013-11-19 21:43:52.935054171 -0500
+@@ -225,7 +225,7 @@
+ #endif /* CK_ANSIC */
+ extern struct x_to_unicode * txrinfo[MAXTXSETS+1];
+ 
+-_PROTOTYP(int isunicode, (void));
++_PROTOTYP(static int isunicode, (void));
+ _PROTOTYP(int utf8_to_ucs2, (CHAR, USHORT **));
+ _PROTOTYP(int ucs2_to_utf8, (USHORT, CHAR **));
+ _PROTOTYP(int tx_cpsub, (USHORT));
+@@ -244,7 +244,7 @@
+ #else
+ _Inline
+ #endif /* NT */
+-int
++static int
+ isunicode(
+ #ifdef CK_ANSIC
+           void
+diff -Nruw src.farproc/ck_des.c src/ck_des.c
+--- src.farproc/ck_des.c	2013-11-19 22:27:43.097128153 -0500
++++ src/ck_des.c	2013-11-19 21:48:37.147062165 -0500
+@@ -18,18 +18,20 @@
+ #ifdef LIBDES
+ /* The following is specific to my installation, but since I'm the only one */
+ /* that uses this file ...                                                  */
++/* (jwt) not anymore! */
+ #include "ckcdeb.h"
+ #include "ckuath.h"
+ #define CK_DES_C
+ #include "ckuat2.h"
+ #ifdef NT
+ #ifdef _M_ALPHA
+-#include <c:\srp\des\des.h>
++#include <c:\srp\des\des.h> /* (jwt) broken */
+ #else
+-#include <c:\src\srp\des\des.h>
++/* (jwt) since libdes is long gone, try to use OpenSSL emulation... */
++#include <openssl/des.h> 
+ #endif
+ #else
+-#include <c:\srp\des\des.h>
++#include <c:\srp\des\des.h> /* (jwt) broken */
+ #endif
+ 
+ int
+diff -Nruw src.farproc/ckntap.c src/ckntap.c
+--- src.farproc/ckntap.c	2013-11-19 22:27:43.110128153 -0500
++++ src/ckntap.c	2013-11-19 21:33:27.918036590 -0500
+@@ -1497,7 +1497,7 @@
+             // thing after the end of the structure.  Note that the name of
+             // the comm port is right after the handle, but I don't want it.
+             debug(F111,"TAPI DoLineCallState","ttyfd",ttyfd);
+-            (HANDLE) ttyfd =
++            ttyfd =
+                 *((LPHANDLE)((LPBYTE)lpVarString +
+                     lpVarString -> dwStringOffset));
+             debug(F111,"TAPI DoLineCallState","ttyfd",ttyfd);
+diff -Nruw src.farproc/ckocon.h src/ckocon.h
+--- src.farproc/ckocon.h	2011-07-19 17:07:53.000000000 -0400
++++ src/ckocon.h	2013-11-19 21:42:50.392052411 -0500
+@@ -528,7 +528,7 @@
+ _PROTOTYP(int  is_xprint,(void));
+ _PROTOTYP(int  is_cprint,(void));
+ _PROTOTYP(int  is_uprint,(void));
+-_PROTOTYP(void prtchar, (BYTE));
++_PROTOTYP(void prtchar, (char));
+ _PROTOTYP(void prtstr, (char *,int));
+ _PROTOTYP(void prtscreen, (BYTE,int, int));
+ #ifdef BPRINT
+@@ -547,8 +547,8 @@
+ _PROTOTYP(void setmargins, (int, int));
+ _PROTOTYP(void strinsert, (char *, char *));
+ _PROTOTYP(void wrtch, (unsigned short));
+-_PROTOTYP(int sendescseq, (char *));
+-_PROTOTYP(int ckcgetc, (int));
++_PROTOTYP(int sendescseq, (CHAR *));
++_PROTOTYP(static int ckcgetc, (int));
+ _PROTOTYP(void cwrite, (unsigned short));
+ _PROTOTYP(int concooked, (void));
+ _PROTOTYP(int conraw, (void));
+@@ -565,7 +565,7 @@
+ _PROTOTYP( PCHAR  GetTextFromClipboardServer, (void) ) ;
+ _PROTOTYP( BOOL   PutTextToClipboardServer, ( PCHAR ) ) ;
+ 
+-_PROTOTYP( BOOL   IsConnectMode, ( void ) ) ;
++_PROTOTYP( static BOOL   IsConnectMode, ( void ) ) ;
+ _PROTOTYP( void   SetConnectMode, ( BOOL, int ) ) ;
+ _PROTOTYP( void   getcmdcolor, ( void ) ) ;
+ _PROTOTYP( unsigned char ComputeColorFromAttr, (int, unsigned char, unsigned short));
+@@ -750,7 +750,7 @@
+ #else
+ _Inline
+ #endif
+-BOOL
++static BOOL
+ IsConnectMode( void ) {
+     extern int apcactive;
+     return ConnectMode && !apcactive;
+diff -Nruw src.farproc/ckoetc2.c src/ckoetc2.c
+--- src.farproc/ckoetc2.c	2013-11-19 22:27:43.183128155 -0500
++++ src/ckoetc2.c	2013-11-19 21:56:50.623076046 -0500
+@@ -2,6 +2,7 @@
+   Blowfish algorithm and code by Bruce Schneier, used by permission.
+   Adapted & fixed by fdc, Jan 96.
+ */
++#include <string.h>
+ #ifdef sparc
+ #define ORDER_ABCD
+ #else
+diff -Nruw src.farproc/ckofio.c src/ckofio.c
+--- src.farproc/ckofio.c	2013-11-19 22:27:43.197128156 -0500
++++ src/ckofio.c	2013-11-19 21:49:32.985063736 -0500
+@@ -2420,9 +2420,6 @@
+     char *buf;
+     int x=0,len=0;
+ 
+-#ifndef __IBMC__ /* which has a macro for this */
+-    extern char *getcwd();
+-#endif /* __IBMC__ */
+     buf = cwdbuf;
+     debug(F101,"zgtdir CWDBL","",CWDBL);
+     getcwd(buf,CWDBL);
+diff -Nruw src.farproc/ckoker.h src/ckoker.h
+--- src.farproc/ckoker.h	2011-07-19 17:10:19.000000000 -0400
++++ src/ckoker.h	2013-11-19 21:30:59.834032424 -0500
+@@ -37,14 +37,12 @@
+ #define sopen _sopen
+ #define strupr _strupr
+ #define close _close
+-#define stat _stat
+ #define fileno _fileno
+ #define sys_errlist _sys_errlist
+ #define unlink _unlink
+ #define write _write
+ #define creat _creat
+ #define getpid _getpid
+-#define utime _utime
+ #define mktemp _mktemp
+ #define strnicmp _strnicmp
+ #define read _read
+@@ -52,8 +50,6 @@
+ #define access _access
+ #define wcsdup _wcsdup
+ #define chmod _chmod
+-#define fstat _fstat
+-#define ftime _ftime
+ #endif /* __STDC__ */
+ #define isascii __isascii
+ #endif /* NT */
+diff -Nruw src.farproc/ckonet.h src/ckonet.h
+--- src.farproc/ckonet.h	2011-07-19 17:11:33.000000000 -0400
++++ src/ckonet.h	2013-11-19 21:34:51.572038943 -0500
+@@ -109,7 +109,7 @@
+ _PROTOTYP( int os2_nettchk, (void) );
+ _PROTOTYP( int os2_netbreak, (void) );
+ _PROTOTYP( int os2_netinc, (int) );
+-_PROTOTYP( int os2_netxin, (int, char *) ) ;
++_PROTOTYP( int os2_netxin, (int, CHAR *) ) ;
+ _PROTOTYP( int os2_nettol, (char *, int) );
+ _PROTOTYP( int os2_nettoc, (int) );
+ _PROTOTYP( int os2_netxout, (char *, int) );
+diff -Nruw src.farproc/ckosslc.c src/ckosslc.c
+--- src.farproc/ckosslc.c	2013-11-19 22:27:43.273128158 -0500
++++ src/ckosslc.c	2013-11-19 22:14:54.557106535 -0500
+@@ -4174,7 +4174,7 @@
+             rc = GetLastError() ;
+             debug(F111,"OpenSSL Crypto GetProcAddress failed",
+                    "EVP_CIPHER_CTX_key_length",rc);
+-            load_error = 1;
++            /* load_error = 1; */ /* (jwt) seems missing from OpenSSL 0.9.7 */
+         }
+ 
+         if (( p_EVP_Cipher =
+@@ -4183,7 +4183,7 @@
+             rc = GetLastError() ;
+             debug(F111,"OpenSSL Crypto GetProcAddress failed",
+                    "EVP_Cipher",rc);
+-            load_error = 1;
++            /* load_error = 1; */ /* (jwt) seems missing from OpenSSL 0.9.7 */
+         }
+ 
+         if (( p_EVP_CIPHER_CTX_iv_length =
+@@ -4192,7 +4192,7 @@
+             rc = GetLastError() ;
+             debug(F111,"OpenSSL Crypto GetProcAddress failed",
+                    "EVP_CIPHER_CTX_iv_length",rc);
+-            load_error = 1;
++            /* load_error = 1; */ /* (jwt) seems missing from OpenSSL 0.9.7 */
+         }
+ 
+         if (( p_EVP_CIPHER_CTX_get_app_data =
+@@ -4201,7 +4201,7 @@
+             rc = GetLastError() ;
+             debug(F111,"OpenSSL Crypto GetProcAddress failed",
+                    "EVP_CIPHER_CTX_get_app_data",rc);
+-            load_error = 1;
++            /* load_error = 1; */ /* (jwt) seems missing from OpenSSL 0.9.7 */
+         }
+ 
+         if (( p_EVP_CIPHER_CTX_set_app_data =
+@@ -4210,7 +4210,7 @@
+             rc = GetLastError() ;
+             debug(F111,"OpenSSL Crypto GetProcAddress failed",
+                    "EVP_CIPHER_CTX_set_app_data",rc);
+-            load_error = 1;
++            /* load_error = 1; */ /* (jwt) seems missing from OpenSSL 0.9.7 */
+         }
+ 
+         if ( load_error ) {
+diff -Nruw src.farproc/ckosslc.h src/ckosslc.h
+--- src.farproc/ckosslc.h	2007-02-27 12:50:01.000000000 -0500
++++ src/ckosslc.h	2013-11-19 21:28:10.536027662 -0500
+@@ -239,11 +239,6 @@
+ #define EVP_CIPHER_CTX_set_key_length     ck_EVP_CIPHER_CTX_set_key_length
+ #define EVP_CIPHER_CTX_init               ck_EVP_CIPHER_CTX_init          
+ #define EVP_CIPHER_CTX_cleanup            ck_EVP_CIPHER_CTX_cleanup       
+-#define EVP_CIPHER_CTX_key_length	  ck_EVP_CIPHER_CTX_key_length
+-#define EVP_Cipher			  ck_EVP_Cipher
+-#define EVP_CIPHER_CTX_set_app_data       ck_EVP_CIPHER_CTX_set_app_data
+-#define EVP_CIPHER_CTX_get_app_data	  ck_EVP_CIPHER_CTX_get_app_data
+-#define EVP_CIPHER_CTX_iv_length          ck_EVP_CIPHER_CTX_iv_length
+ 
+ #ifndef CKCFTP_C
+ #ifndef CKUATH_C
+@@ -283,7 +278,6 @@
+ #define PEM_read_PrivateKey               ck_PEM_read_PrivateKey
+ #define X509_get_default_cert_dir_env     ck_X509_get_default_cert_dir_env
+ #define X509_get_default_cert_file_env    ck_X509_get_default_cert_file_env
+-#define EVP_MD_size                       ck_EVP_MD_size
+ 
+ #define SHA1_Init               ck_SHA1_Init
+ #define SHA1_Update             ck_SHA1_Update
+diff -Nruw src.farproc/ckossl.h src/ckossl.h
+--- src.farproc/ckossl.h	2011-07-19 17:14:25.000000000 -0400
++++ src/ckossl.h	2013-11-19 21:28:15.912027813 -0500
+@@ -96,7 +96,6 @@
+ #endif /* SSL_KRB5 */
+ #define SSL_COMP_add_compression_method  ck_SSL_COMP_add_compression_method
+ #define SSL_CTX_use_certificate_chain_file   ck_SSL_CTX_use_certificate_chain_file
+-#define SSL_CTX_set_info_callback        ck_SSL_CTX_set_info_callback
+ 
+ void ck_SSL_library_init(void);
+ int     ck_SSL_get_error(SSL *ssl,int num);
+diff -Nruw src.farproc/ckotio.c src/ckotio.c
+--- src.farproc/ckotio.c	2013-11-19 22:27:43.297128159 -0500
++++ src/ckotio.c	2013-11-19 22:20:40.307116261 -0500
+@@ -3894,7 +3894,7 @@
+ }
+ 
+ int
+-le_puts( char * s, int n )
++le_puts( unsigned char * s, int n )
+ {
+     int rc = 0 ;
+     int i = 0;
+@@ -3948,7 +3948,7 @@
+ }
+ 
+ int
+-le_getchar( CHAR * pch )
++le_getchar( unsigned char * pch )
+ {
+     int rc = 0 ;
+ 
+@@ -4174,8 +4174,9 @@
+ /*  Intended for use only when it is known that n characters are actually */
+ /*  available in the input buffer because this function blocks.           */
+ 
++static int rdch(int timo);
+ int
+-ttxin(int n, CHAR *buf) {
++ttxin(int n, unsigned char *buf) {
+     int i=0, j=0, k=0;
+     CHAR m=0 ;
+ 
+@@ -4990,7 +4991,7 @@
+ #endif /* CK_ENCRYPTION */
+ 
+ int
+-ttol(CHAR *s, int n) {
++ttol(unsigned char *s, int n) {
+     UINT i;
+     int  rc = 0 ;
+     int  charsleft;
+@@ -5323,7 +5324,7 @@
+ /*
+   blah blah
+ */
+-ttinl(CHAR *dest, int max, int timo, CHAR eol, CHAR start, int turn) {
++ttinl(unsigned char *dest, int max, int timo, unsigned char eol, unsigned char start, int turn) {
+     extern int xfrcan, xfrchr, xfrnum;  /* Defined in ckcmai.c */
+     extern int priority;
+     int x=0, c=0, ccn=0;
+@@ -5735,7 +5736,6 @@
+ /* or -3 if session limit has expired,                                     */
+ /* or -4 if something or other...                                          */
+ 
+-int rdch(int timo);
+ int
+ ttinc(int timo) {
+     int m, i=0, j=0;
+@@ -9436,6 +9436,7 @@
+ int
+ chkexp( void )
+ {
++#ifdef WITH_LICENSING_CHECKS
+ #ifndef NOLOCAL
+     extern unsigned char colorcmd ;
+     extern int expmon, expday, expyear ;
+@@ -9556,12 +9557,14 @@
+     }
+     colorcmd ^= 0x8 ;
+ #endif /* NOLOCAL */
++#endif /* WITH_LICENSING_CHECKS */
+     return(1);
+ }
+ 
+ int
+ shoreg( void )
+ {
++#ifdef WITH_LICENSING_CHECKS
+ #ifndef NOLOCAL
+     int    dsn ;  /* decoded serial number */
+     extern unsigned char colorcmd ;
+@@ -9638,6 +9641,7 @@
+     }
+     colorcmd ^= 0x8 ;
+ #endif /* NOLOCAL */
++#endif /* WITH_LICENSING_CHECKS */
+     return 0;
+ }
+ 
+diff -Nruw src.farproc/ckouni.h src/ckouni.h
+--- src.farproc/ckouni.h	2011-07-19 17:15:43.000000000 -0400
++++ src/ckouni.h	2013-11-19 21:44:02.495054439 -0500
+@@ -223,7 +223,7 @@
+ _Inline
+ #endif /* NT */
+ #endif /* OS2 */
+-int
++static int
+ isunicode(
+ #ifdef CK_ANSIC
+ 	  void
+diff -Nruw src.farproc/ckowin.h src/ckowin.h
+--- src.farproc/ckowin.h	2011-07-19 17:16:08.000000000 -0400
++++ src/ckowin.h	2013-11-19 21:44:37.214055416 -0500
+@@ -15,7 +15,7 @@
+ extern HAB hab;
+ #endif
+ 
+-_PROTOTYP( void DialerSend, ( UINT, LONG ) ) ;
++_PROTOTYP( static void DialerSend, ( UINT, LONG ) ) ;
+ 
+ #define OPT_KERMIT_SUCCESS          12001
+ #define OPT_KERMIT_FAILURE          12002
+@@ -37,7 +37,7 @@
+ #define OPT_TAPI_SHUTDOWN           14004
+ 
+ #ifdef NT
+-__inline void
++static __inline void
+ DialerSend(UINT message, LONG lparam)
+ {
+     if ( StartedFromDialer )
+diff -Nruw src.farproc/ckuath.c src/ckuath.c
+--- src.farproc/ckuath.c	2013-11-19 22:27:43.339128160 -0500
++++ src/ckuath.c	2013-11-19 22:00:39.927082496 -0500
+@@ -193,11 +193,9 @@
+ #endif /* KRB524 */
+ #else /* KRB4 */
+ #ifdef CK_SSL
+-#define  des_cblock Block
+ #ifdef COMMENT
+ #define  const_des_cblock const Block
+ #endif /* COMMENT */
+-#define  des_key_schedule Schedule
+ #endif /* CK_SSL */
+ #endif /* KRB4 */
+ 
+@@ -233,8 +231,6 @@
+ #ifdef UNIX
+ #define des_set_random_generator_seed(x) des_init_random_number_generator(x)
+ #endif /* UNIX */
+-#else /* LIBDES */
+-#define des_fixup_key_parity des_set_odd_parity
+ #endif /* LIBDES */
+ 
+ #ifdef OS2
+diff -Nruw src.farproc/ckuusr.h src/ckuusr.h
+--- src.farproc/ckuusr.h	2005-12-24 15:25:47.000000000 -0500
++++ src/ckuusr.h	2013-11-19 21:32:52.062035581 -0500
+@@ -2811,7 +2811,7 @@
+ _PROTOTYP( int setfil, (int) );
+ _PROTOTYP( char * homepath, (void) );
+ #ifdef OS2
+-_PROTOTYP( int settapi, (void) ) ;
++_PROTOTYP( static int settapi, (void) ) ;
+ #ifdef OS2MOUSE
+ _PROTOTYP( int setmou, (void) );
+ #endif /* OS2MOUSE */
+diff -Nruw src.farproc/ckuusx.c src/ckuusx.c
+--- src.farproc/ckuusx.c	2013-11-19 22:27:43.534128165 -0500
++++ src/ckuusx.c	2013-11-19 21:59:42.479080880 -0500
+@@ -1020,9 +1020,6 @@
+       return((char *) sys_errlist[errno]);
+ #else
+ #ifdef OS2
+-#ifndef NDSYSERRLIST
+-    extern char *sys_errlist[];
+-#endif /* NDSYSERRLIST */
+ #ifdef NT
+     extern int_sys_nerr;
+ #endif /* NT */
+diff -Nruw src.farproc/Makefile src/Makefile
+--- src.farproc/Makefile	1969-12-31 19:00:00.000000000 -0500
++++ src/Makefile	2013-11-19 22:50:18.648166283 -0500
+@@ -0,0 +1,28 @@
++# Config
++CC=$(CROSS_COMPILE)gcc
++DLLWRAP=$(CROSS_COMPILE)dllwrap
++
++CPPFLAGS=-I../openssl-0.9.7/outinc -I../$(ZLIB_VERSION) -DNDEBUG -DWIN32 -D_WIN32 -D_CONSOLE -D__32BIT__ -D_WIN32_WINNT=0x0400 -DK95BUILD=K95 -DNT -DWINVER=0x0400 -DOS2 -DDYNAMIC -DKANJI -DNETCONN -DHADDRLIST -DNPIPE -DOS2MOUSE -DTCPSOCKET -DRLOGCODE -DZLIB -DNETFILE -DONETERMUPD -DLIBDES -DCRYPT_DLL -DNEWFTP -DNO_DNS_SRV -DNO_KERBEROS -DNO_SRP -DOPENSSL_097 -DNO_SSL_KRB5 -DNOCKXYZ -DNOSSH
++CCDEBUG=-g3 -ggdb
++CCRELEASE=-march=i686 -O2
++CFLAGS=-funsigned-char $(CCRELEASE) # can flip to CCDEBUG 
++LDDEBUG=
++LDRELEASE=-s
++LDFLAGS=-L../openssl-0.9.7/out $(LDRELEASE) # can flip to LDDEBUG
++LIBS=-lws2_32 -lspoolss -lwinspool -lgdi32 -lwinmm
++OBJS=ckcmai.o ckcfns.o ckcfn2.o ckcfn3.o ckcnet.o ckcpro.o ckucmd.o ckudia.o ckofio.o ckuscr.o ckuusr.o ckuus2.o ckuus3.o ckuus4.o ckuus5.o ckuus6.o ckuus7.o ckuusx.o ckuusy.o ckuxla.o ckclib.o ckctel.o ckcuni.o ckcftp.o cknsig.o cknalm.o ckntap.o cknwin.o cknprt.o ckuath.o ckoath.o ck_ssl.o ckossl.o ckosslc.o ckossh.o ckosftp.o ckozli.o ckocon.o ckoco2.o ckoco3.o ckoco4.o ckoco5.o ckoetc.o ckoetc2.o ckokey.o ckomou.o ckoreg.o ckonet.o ckoslp.o ckosyn.o ckothr.o ckotek.o ckotio.o ckowys.o ckodg.o ckoava.o ckoi31.o ckotvi.o ckovc.o ckoadm.o ckohzl.o ckohp.o ckoqnx.o cknnbi.o ckop.o 
++K95CRYPT_OBJS=ck_crp.o ck_des.o ckclib.o
++
++all: ../bin/k95.exe ../bin/k95crypt.dll
++
++../bin/k95.exe: $(OBJS)
++	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
++
++../bin/k95crypt.dll: $(K95CRYPT_OBJS)
++	$(DLLWRAP) --dllname $@ --def ck_crp.def $(LDFLAGS) $^ -leay32
++clean:
++	rm -f $(OBJS) $(K95CRYPT_OBJS) ../bin/k95.exe ../bin/k95crypt.dll 
++
++.c.o:
++	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $^
++

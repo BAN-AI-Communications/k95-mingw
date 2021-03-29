@@ -1,0 +1,106 @@
+                   The Kermit Project
+                   New York City USA
+				   kermit@kermitproject.org
+                   …since 1981
+
+Open Source Kermit 95 for Windows Progress Report
+
+   In 2013 two programmers, working mostly independently from each other,
+   attempted to resurrect Kermit 95 communications software as an Open
+   Source application. Missing modules were excavated and numerous problems
+   overcome, and each was finally able to build a working version. But much
+   work remains to be done.
+
+   It is unfortunate that the work was not completed, but hopefully by
+   revealing what has been done so far, someone else can combine the two
+   branches and do some of the tasks that remain (this is not a complete
+   list):
+
+     * A new installer is needed.
+     * A new name might be needed.
+     * There is no way to carry forward the K95 Dialer so it will be dropped
+       and K95, if it is to have a new life, will be as text-only application
+       with a few GUI dialogs. However, it is likely that any new release of
+       K95 will still work with the (commercial) K95 2.1.3 Dialer if you
+       happen to have a copy.
+     * SSL/TLS security needs to be brought up to date.
+     * SSH support must be totally redone since the K95's original SSH
+       module, circa 2002, is no longer secure; this might be accomplished
+       using libssh or libssh2 or PuTTY's plink module; each has its 
+	   attractions and drawbacks.
+	   UPDATE: As of October 19th 2015, another likely candidate would
+	   be Microsoft's OpenSSH for Windows.
+     * XYZMODEM file-transfer protocol will need to be totally redone for
+       Open Source (the K95 XYZMODEM code was licensed from a company).
+       Failing that, there will be no XYZMODEM support.
+     * Kerberos security needs to be changed from MIT to Heimdal, or just
+       dropped.
+     * The result needs to support large files.
+     * The result needs to be buildable with GCC or other open compiler
+       rather than require proprietary Microsoft tools.
+     * The result will rejoin the main C-Kermit development branch as one
+       of the platforms for which C-Kermit is built.
+
+  What is Kermit 95?
+
+   Kermit 95 is Kermit software for Microsoft Windows: briefly, terminal
+   emulation, file transfer, and scripting of communication tasks over a
+   variety of communication methods (serial port, modem, Telnet, SSH, etc).
+
+     Let me state it another way:  K95 is probably the best terminal
+     emulator ever, and also the most powerful in terms of automation and
+     customization features. It is designed and best suited for people who
+     are comfortable with text-mode user interfaces and command languages,
+     and who are good typists, because you can do just about everything in
+     K95 without your fingers ever leaving the keyboard. It has its own
+     built-in programming language (similar to Unix shell scripting, but
+     different) so you can easily automate repetitive or error-prone tasks.
+     It has unparalleled key mapping and keystroke macro capabilities. It
+     supports terminal emulation in many languages (English, Spanish, German,
+     Icelandic, Greek, Russian, Vietnamese... see for yourself) and
+     almost every known character encoding (ASCII, ISO646, ISO8859, UTF-8, PC
+     and Windows code pages, and on and on). And it supports inline
+     transfer of both text and binary files in both directions within your
+     terminal session. It takes some effort to learn how to use it, but that
+     effort is well spent because you will be orders-of-magnitude more
+     efficient in your online sessions.
+
+   The Columbia University Kermit Project was a pioneer in open software,
+   founded years before the GNU project or Free Software Foundation. Our
+   software source code was openly published and shared long before the term
+   Open Source was invented. Kermit 95 was the Kermit Project's first and
+   only commercial product, developed and published to generate income to
+   help fund the project and its noncommercial products at a time when the
+   Kermit Project had to pay for itself or disappear.
+
+   As of July 1, 2011, there is no more Kermit Project at Columbia
+   University, and all Kermit software has become Open Source. The last K95
+   release was version 2.1.3 in 2003 but it has not yet been released in
+   usable (executable) form because more work is required, and nobody is
+   being paid to this any more. The new Open Source version will have a lot
+   of improvements, but will also lack (at least at first) some previous
+   features that can't be made into Open Source (e.g. some proprietary code
+   that we licensed). But it will be free for everybody to download, install,
+   use, and modify.
+
+  Why work on Kermit 95?
+
+     * It's retro! Experience the look and feel of computing as it was at the
+       height of the timesharing era, circa 1975-95.
+     * It's handmade by real programmers.
+     * It is unbelievably handy for sysadmin, website development and
+       administration, software development, scripting, and other backoffice
+       tasks. See the Kermit Script Library for examples.
+     * Kermit 95 is one of a family of programs that run on many different
+       operating systems and platforms, offering a uniform and compatible
+       repertoire of functions, commands, and programmability, allowing the
+       same scripted procedures to operate on Windows, Linux and all other
+       Unix varieties (old and new), and VMS. The basis for all these
+       programs is C-Kermit, which has been evolving all these years
+       since K95 was last released, so the last release of K95 lags far
+       behind in its scripting capabilities. The new release (as it stands)
+       is fully integrated with C-Kermit 9.0.
+
+   --------------------------------------------------------------------------
+
+    kermit@kermitproject.org

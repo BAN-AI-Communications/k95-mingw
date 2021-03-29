@@ -1,0 +1,26 @@
+--- ocsp.h.orig	2013-11-19 20:03:11.917884246 -0500
++++ ocsp.h	2013-11-19 20:05:20.532887863 -0500
+@@ -149,6 +149,7 @@
+  *       tbsRequest                  TBSRequest,
+  *       optionalSignature   [0]     EXPLICIT Signature OPTIONAL }
+  */
++#undef OCSP_REQUEST
+ typedef struct ocsp_request_st
+ 	{
+ 	OCSP_REQINFO *tbsRequest;
+@@ -186,6 +187,7 @@
+  *      responseStatus         OCSPResponseStatus,
+  *      responseBytes          [0] EXPLICIT ResponseBytes OPTIONAL }
+  */
++#undef OCSP_RESPONSE
+ typedef struct ocsp_response_st
+ 	{
+ 	ASN1_ENUMERATED *responseStatus;
+@@ -198,6 +200,7 @@
+  */
+ #define V_OCSP_RESPID_NAME 0
+ #define V_OCSP_RESPID_KEY  1
++#undef X509_NAME
+ typedef struct ocsp_responder_id_st
+ 	{
+ 	int type;
