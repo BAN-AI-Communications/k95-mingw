@@ -1,1 +1,1 @@
-Kermit-95 (mingw32)
+# Kermit-95 (MinGW32)
